@@ -9,11 +9,11 @@ app = Flask(__name__, static_folder='static', template_folder='templates')
 
 # Configure Gemini
 GENAI_API_KEY = os.getenv("GEMINI_API_KEY")
+model = None
 if GENAI_API_KEY:
     genai.configure(api_key=GENAI_API_KEY)
-    model = genai.GenerativeModel('gemini-flash-latest')
-else:
-    model = None
+    # Using Flash 1.5 for the best balance of speed and intelligence
+    model = genai.GenerativeModel('gemini-1.5-flash-latest')
 
 @app.route('/')
 def index():
@@ -50,10 +50,6 @@ def chat():
 
     return app.response_class(generate(), mimetype='text/plain')
 
-# Updated model for speed
-if GENAI_API_KEY:
-    genai.configure(api_key=GENAI_API_KEY)
-    model = genai.GenerativeModel('gemini-flash-lite-latest')
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
