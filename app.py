@@ -44,7 +44,7 @@ def chat():
     
     # Configure the model for this specific request with system instructions
     request_model = genai.GenerativeModel(
-        'gemini-1.5-flash-latest',
+        'gemini-flash-latest',
         system_instruction=system_instruction
     )
     
