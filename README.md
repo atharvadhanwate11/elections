@@ -15,7 +15,23 @@ Navigating election procedures can be overwhelming. VoterGuide AI reduces "choic
 - **HCI-First Checklist:** A tactile "Civic Checklist" featuring a real-time **Preparation Progress Bar**. Checking off tasks provides visual feedback and ensures 100% readiness.
 - **ElectiBot (AI Assistant):** A floating, persistent assistant powered by **Google Gemini (gemini-flash-latest)**. It uses the user's active country and current phase to provide hyper-relevant advice.
 - **Official Portal Integration:** Replaces unreliable search methods with direct, secure links to official government voter portals (`vote.org` and `eci.gov.in`).
+- **Google Calendar Sync:** One-click integration with Google Calendar to add "Election Day" to the user's schedule, ensuring they never miss the deadline.
+- **Accessibility (TTS):** Integrated Web Speech API to read out ElectiBot's responses for visually impaired voters.
 - **Premium Aesthetics:** A state-of-the-art UI featuring glassmorphism, the 'Outfit' typography, smooth micro-animations, and a fully responsive grid system.
+
+## 🏗️ Architecture
+
+```mermaid
+graph TD
+    User([Voter]) --> UI[Frontend UI & Checklist]
+    UI --> |Ajax POST| Flask[Flask Backend]
+    UI --> |Web Speech API| TTS[Text-to-Speech]
+    UI --> |URL Format| GCal[Google Calendar API]
+    
+    Flask --> |System Instructions| Gemini[Google Gemini 1.5 Flash]
+    Gemini --> |Streaming Chunks| Flask
+    Flask --> |SSE| UI
+```
 
 ## 🛠️ Technology Stack
 
@@ -58,6 +74,15 @@ Navigating election procedures can be overwhelming. VoterGuide AI reduces "choic
    python app.py
    ```
    Visit `http://127.0.0.1:5000` in your browser.
+
+## 🧪 Testing
+
+This project includes a robust testing suite using `pytest` to validate routing and mock the Google Gemini API for safe CI/CD execution.
+
+```bash
+# Run the test suite
+pytest tests/
+```
 
 ---
 *Developed by Atharva Dhanwate - Empowering democracy through intelligent design.*

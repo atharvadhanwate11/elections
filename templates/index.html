@@ -17,6 +17,9 @@
             VoterGuide AI
         </div>
         <div class="header-actions" style="display: flex; gap: 1rem; align-items: center;">
+            <button id="ttsToggle" onclick="toggleTTS()" class="icon-btn" title="Toggle Read Aloud (Accessibility)">
+                <i class="fas fa-volume-up"></i>
+            </button>
             <select id="countrySelect" onchange="changeCountry()" style="padding: 0.5rem 1rem; border-radius: 10px; border: 1px solid var(--surface-border); background: rgba(255,255,255,0.9); font-weight: 600; font-family: 'Outfit', sans-serif; cursor: pointer; outline: none; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
                 <option value="USA">🇺🇸 United States</option>
                 <option value="India">🇮🇳 India</option>
@@ -91,9 +94,12 @@
                 <label for="check5">Confirmed required ID for my station</label>
             </div>
             
-            <div style="margin-top: 2.5rem; text-align: center;">
+            <div style="margin-top: 2.5rem; display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem;">
                 <button onclick="findPollingStation()" class="portal-btn" aria-label="Access official election portal">
-                    <i class="fas fa-external-link-alt"></i> Access Official Voter Portal
+                    <i class="fas fa-external-link-alt"></i> Official Voter Portal
+                </button>
+                <button onclick="addToGoogleCalendar()" class="calendar-btn" aria-label="Add Election Day to Google Calendar">
+                    <i class="fab fa-google"></i> Sync to Google Calendar
                 </button>
             </div>
         </section>

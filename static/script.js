@@ -8,6 +8,53 @@ const chatForm = document.getElementById('chatForm');
 const userInput = document.getElementById('userInput');
 const chatMessages = document.getElementById('chatMessages');
 
+let ttsEnabled = false;
+
+// Toggle Text-to-Speech
+function toggleTTS() {
+    ttsEnabled = !ttsEnabled;
+    const btn = document.getElementById('ttsToggle');
+    if (ttsEnabled) {
+        btn.classList.add('active');
+        addMessage("Read aloud is now enabled.", 'bot');
+    } else {
+        btn.classList.remove('active');
+        window.speechSynthesis.cancel();
+    }
+}
+
+// Speak text using Web Speech API
+function speakText(text) {
+    if (!ttsEnabled || !window.speechSynthesis) return;
+    window.speechSynthesis.cancel(); // Stop current
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 1.0;
+    utterance.pitch = 1.0;
+    window.speechSynthesis.speak(utterance);
+}
+
+// Add to Google Calendar
+function addToGoogleCalendar() {
+    let title, dates, details, location;
+    
+    if (currentCountry === 'USA') {
+        title = "US Election Day - Go Vote!";
+        // Using a sample date for demonstration (e.g. Nov 3, 2026)
+        dates = "20261103T130000Z/20261103T230000Z";
+        details = "Remember to bring your ID if required by your state. Find your polling place at https://www.vote.org";
+        location = "Your Local Polling Station";
+    } else {
+        title = "Indian Election Voting Day";
+        // Using a generic placeholder range 
+        dates = "20260401T023000Z/20260401T123000Z"; 
+        details = "Bring your EPIC (Voter ID) or Aadhar. Find your booth at https://electoralsearch.eci.gov.in";
+        location = "Your Designated Polling Booth";
+    }
+    
+    const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${dates}&details=${encodeURIComponent(details)}&location=${encodeURIComponent(location)}`;
+    window.open(url, '_blank');
+}
+
 // Toggle Chat Visibility
 chatToggle.addEventListener('click', () => {
     chatWidget.classList.add('open');
@@ -138,6 +185,9 @@ chatForm.addEventListener('submit', async (e) => {
         }
         
         botMsgDiv.style.minHeight = ''; // Remove constraint after streaming is done
+        
+        // Speak the final complete response if TTS is enabled
+        speakText(botMsgDiv.textContent);
 
     } catch (error) {
         if (chatMessages.contains(typingMsg)) chatMessages.removeChild(typingMsg);

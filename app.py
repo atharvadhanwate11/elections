@@ -29,19 +29,29 @@ def chat():
     context = data.get("context", "General Inquiry") 
     country = data.get("country", "USA")
     
-    prompt = f"""
-    You are 'ElectiBot', an intelligent assistant for voters.
-    Target Country: {country}, User Current Phase: {context}.
-    Question: {user_message}.
-    
-    CRITICAL: Be ultra-concise. Max 40 words.
-    Use {country} electoral laws. If asking for dates/booths, point to { "www.vote.org" if country == "USA" else "eci.gov.in" }.
+    # Advanced usage: System Instructions for strict grounding
+    system_instruction = f"""
+    You are 'ElectiBot', a highly secure and intelligent assistant for voters.
+    You must ONLY provide information related to elections, voting, and civic duties.
+    If a user asks about anything else, politely decline.
+    Target Country: {country}.
+    User's Current Progress Phase: {context}.
+    CRITICAL RULES:
+    1. Be ultra-concise. Maximum 40 words.
+    2. Use strict {country} electoral laws.
+    3. If they ask for dates or booth locations, ALWAYS direct them to: { "www.vote.org" if country == "USA" else "eci.gov.in" }.
     """
+    
+    # Configure the model for this specific request with system instructions
+    request_model = genai.GenerativeModel(
+        'gemini-1.5-flash-latest',
+        system_instruction=system_instruction
+    )
     
     def generate():
         try:
             # Use generate_content with stream=True
-            response = model.generate_content(prompt, stream=True)
+            response = request_model.generate_content(user_message, stream=True)
             for chunk in response:
                 if chunk.text:
                     yield chunk.text
