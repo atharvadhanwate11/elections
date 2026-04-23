@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VoterGuide AI | Simplify Your Voting Journey</title>
+    <meta name="description" content="An interactive assistant designed to simplify the election process for first-time voters.">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <header>
+        <div class="logo">
+            <i class="fas fa-fingerprint"></i>
+            VoterGuide AI
+        </div>
+        <div class="header-actions" style="display: flex; gap: 1rem; align-items: center;">
+            <select id="countrySelect" onchange="changeCountry()" style="padding: 0.5rem 1rem; border-radius: 10px; border: 1px solid var(--surface-border); background: rgba(255,255,255,0.9); font-weight: 600; font-family: 'Outfit', sans-serif; cursor: pointer; outline: none; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+                <option value="USA">🇺🇸 United States</option>
+                <option value="India">🇮🇳 India</option>
+            </select>
+            <span style="font-weight: 600; font-size: 0.9rem; color: var(--text-muted); display: none;">Hackathon Edition</span>
+        </div>
+    </header>
+
+    <main class="main-container">
+        <section class="hero">
+            <h1>Participate in<br>Democracy with Ease</h1>
+            <p>Your one-stop assistant for navigating the voting process. Empowering first-time voters with smart insights and a clear path to the polls.</p>
+        </section>
+
+        <section class="steps-grid">
+            <div class="step-card" onclick="updateContext('Eligibility')">
+                <span class="badge">Phase 01</span>
+                <h3 id="step1-title">Are You Eligible?</h3>
+                <p id="step1-desc">Confirm your age, citizenship status, and residency. Typically requires you to be 18 on or before election day.</p>
+                <i class="fas fa-arrow-right arrow"></i>
+            </div>
+            <div class="step-card" onclick="updateContext('Registration')">
+                <span class="badge">Phase 02</span>
+                <h3 id="step2-title">Get Registered</h3>
+                <p id="step2-desc">Register to vote before the deadlines close. In the US, this is state-specific. In India, it's via Form 6 (NVSP).</p>
+                <i class="fas fa-arrow-right arrow"></i>
+            </div>
+            <div class="step-card" onclick="updateContext('Preparation')">
+                <span class="badge">Phase 03</span>
+                <h3 id="step3-title">Know Your Ballot</h3>
+                <p id="step3-desc">Research the candidates, parties, and local measures. Use reputable resources to form an informed choice.</p>
+                <i class="fas fa-arrow-right arrow"></i>
+            </div>
+            <div class="step-card" onclick="updateContext('Voting')">
+                <span class="badge">Phase 04</span>
+                <h3 id="step4-title">Cast Your Vote</h3>
+                <p id="step4-desc">Locate your polling station, check opening hours, and ensure you bring the required valid identification.</p>
+                <i class="fas fa-arrow-right arrow"></i>
+            </div>
+        </section>
+
+        <h2 class="section-title">Your Civic Checklist</h2>
+        <section class="checklist-container">
+            <div style="margin-bottom: 2rem;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                    <span style="font-weight: 600; color: var(--text-muted); font-size: 0.9rem;">Preparation Progress</span>
+                    <span id="progressText" style="font-weight: 700; color: var(--primary);">0%</span>
+                </div>
+                <div style="width: 100%; height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden;">
+                    <div id="progressBar" style="width: 0%; height: 100%; background: var(--primary); transition: width 0.4s ease;"></div>
+                </div>
+            </div>
+
+            <div class="checklist-item">
+                <input type="checkbox" id="check1" class="tracker" onchange="updateProgress()">
+                <label for="check1">Confirmed my eligibility status</label>
+            </div>
+            <div class="checklist-item">
+                <input type="checkbox" id="check2" class="tracker" onchange="updateProgress()">
+                <label for="check2">Registered to vote (verified registration)</label>
+            </div>
+            <div class="checklist-item">
+                <input type="checkbox" id="check3" class="tracker" onchange="updateProgress()">
+                <label for="check3">Identified my official polling station</label>
+            </div>
+            <div class="checklist-item">
+                <input type="checkbox" id="check4" class="tracker" onchange="updateProgress()">
+                <label for="check4">Researched all candidates on my ballot</label>
+            </div>
+            <div class="checklist-item">
+                <input type="checkbox" id="check5" class="tracker" onchange="updateProgress()">
+                <label for="check5">Confirmed required ID for my station</label>
+            </div>
+            
+            <div style="margin-top: 2.5rem; text-align: center;">
+                <button onclick="findPollingStation()" class="portal-btn" aria-label="Access official election portal">
+                    <i class="fas fa-external-link-alt"></i> Access Official Voter Portal
+                </button>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>Built with <i class="fas fa-heart" style="color: #ef4444;"></i> for the Future of Democracy.</p>
+        <p style="margin-top: 0.5rem; font-size: 0.8rem; opacity: 0.6;">Powered by Google Gemini 1.5 Flash.</p>
+    </footer>
+
+    <!-- AI Floating UI -->
+    <div class="ai-fab" id="chatToggle">
+        <i class="fas fa-comment-dots"></i>
+    </div>
+
+    <div class="chat-panel" id="chatWidget">
+        <div class="chat-header">
+            <h4>ElectiBot AI</h4>
+            <i class="fas fa-times" id="closeChat" style="cursor: pointer; opacity: 0.8;"></i>
+        </div>
+        <div class="chat-body" id="chatMessages">
+            <div class="chat-msg bot">
+                👋 Hello! I'm ElectiBot. I'm here to simplify the election process for you. Where should we begin?
+            </div>
+        </div>
+        <form class="chat-input-area" id="chatForm">
+            <input type="text" id="userInput" placeholder="Ask about voting..." autocomplete="off">
+            <button type="submit">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </form>
+    </div>
+
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
