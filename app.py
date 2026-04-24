@@ -90,17 +90,9 @@ def chat() -> Response | tuple[Response, int]:
     def generate() -> Generator[str, None, None]:
         """Generator function to stream AI response chunks."""
         try:
-            # Using the latest SDK streaming generation
-            response = client.models.generate_content(
-                model='gemini-2.0-flash', 
-                contents=user_message, 
-                config=config
-            )
-            # Note: The new SDK handles streaming differently or we can iterate over segments
-            # For simplicity in this migration, we yield the full response or use the stream method if available
-            # In google-genai, we use generate_content_stream
+            # Using the latest SDK streaming generation with stable model
             for chunk in client.models.generate_content_stream(
-                model='gemini-2.0-flash',
+                model='gemini-1.5-flash',
                 contents=user_message,
                 config=config
             ):
