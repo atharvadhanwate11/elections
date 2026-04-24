@@ -16,31 +16,29 @@ def test_index_route(client):
 
 def test_chat_api_missing_key_or_error_handling(client, mocker):
     """Test the chat API endpoint handles requests gracefully."""
-    # We test the endpoint to ensure it returns a valid response format 
-    # even if the API key is not present or if there's a mocked error.
-    
-    # Mock the genai model to prevent actual API calls during tests
-    mocker.patch('app.model', None)
+    # Mock the client to None to trigger the missing key error
+    mocker.patch('app.client', None)
     
     response = client.post('/api/chat', 
                            data=json.dumps({"message": "Hello", "context": "Eligibility", "country": "USA"}),
                            content_type='application/json')
     
-    # If model is None (mocked), it should return 500 error gracefully
+    # If client is None (mocked), it should return 500 error gracefully
     assert response.status_code == 500
     assert b'Gemini API key not configured' in response.data
 
 def test_chat_api_valid_payload(client, mocker):
     """Test the chat API with a mocked successful Gemini response."""
-    # Mock a dummy model
-    class MockModel:
-        def generate_content(self, prompt, stream):
-            class MockChunk:
-                def __init__(self, text):
-                    self.text = text
-            return [MockChunk("Mocked AI Response")]
+    # Mock a dummy client and stream
+    mock_client = mocker.Mock()
+    
+    class MockChunk:
+        def __init__(self, text):
+            self.text = text
+            
+    mock_client.models.generate_content_stream.return_value = [MockChunk("Mocked AI Response")]
 
-    mocker.patch('app.model', MockModel())
+    mocker.patch('app.client', mock_client)
     
     response = client.post('/api/chat', 
                            data=json.dumps({"message": "How do I register?", "context": "Registration", "country": "India"}),
@@ -49,3 +47,4 @@ def test_chat_api_valid_payload(client, mocker):
     assert response.status_code == 200
     # Response is streamed, we can check the text
     assert b'Mocked AI Response' in response.data
+

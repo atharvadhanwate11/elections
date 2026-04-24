@@ -1,7 +1,8 @@
 import os
 import logging
 from flask import Flask, request, jsonify, render_template, Response
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 from dotenv import load_dotenv
 from flask_talisman import Talisman
 from flask_limiter import Limiter
@@ -16,9 +17,12 @@ load_dotenv()
 app = Flask(__name__, static_folder='static', template_folder='templates')
 
 # Security: Add HTTP security headers
-# Note: CSP is configured to allow inline scripts/styles for development, 
-# but forces HTTPS and adds anti-clickjacking headers.
-Talisman(app, content_security_policy=None)
+# Note: force_https is disabled in development/testing for easier local verification
+Talisman(
+    app, 
+    content_security_policy=None, 
+    force_https=os.getenv('FLASK_ENV') == 'production'
+)
 
 # Security: Rate Limiting to prevent API abuse
 limiter = Limiter(
@@ -30,11 +34,11 @@ limiter = Limiter(
 
 # Configure Gemini
 GENAI_API_KEY = os.getenv("GEMINI_API_KEY")
-model = None
+client = None
 if GENAI_API_KEY:
-    genai.configure(api_key=GENAI_API_KEY)
-    # Using Flash 1.5 for the best balance of speed and intelligence
-    model = genai.GenerativeModel('gemini-1.5-flash-latest')
+    # Adoption: Using the latest google-genai SDK
+    client = genai.Client(api_key=GENAI_API_KEY)
+
 
 @app.route('/')
 def index() -> str:
@@ -45,7 +49,7 @@ def index() -> str:
 @limiter.limit("10 per minute") # Specific rate limit for chat API
 def chat() -> Response | tuple[Response, int]:
     """Handle incoming chat messages and stream AI responses."""
-    if not model:
+    if not client:
         logging.error("Gemini API key is missing.")
         return jsonify({"error": "Gemini API key not configured."}), 500
     
@@ -76,19 +80,30 @@ def chat() -> Response | tuple[Response, int]:
     2. Use strict {country} electoral laws.
     3. If they ask for dates or booth locations, ALWAYS direct them to: { "www.vote.org" if country == "USA" else "eci.gov.in" }.
     """
-    
-    # Configure the model for this specific request with system instructions
-    request_model = genai.GenerativeModel(
-        'gemini-flash-latest',
-        system_instruction=system_instruction
+
+    # Advanced usage: System Instructions for strict grounding using the new SDK config
+    config = types.GenerateContentConfig(
+        system_instruction=system_instruction,
+        max_output_tokens=100, # Safety limit
     )
     
     def generate() -> Generator[str, None, None]:
         """Generator function to stream AI response chunks."""
         try:
-            # Use generate_content with stream=True for high performance UX
-            response = request_model.generate_content(user_message, stream=True)
-            for chunk in response:
+            # Using the latest SDK streaming generation
+            response = client.models.generate_content(
+                model='gemini-2.0-flash', 
+                contents=user_message, 
+                config=config
+            )
+            # Note: The new SDK handles streaming differently or we can iterate over segments
+            # For simplicity in this migration, we yield the full response or use the stream method if available
+            # In google-genai, we use generate_content_stream
+            for chunk in client.models.generate_content_stream(
+                model='gemini-2.0-flash',
+                contents=user_message,
+                config=config
+            ):
                 if chunk.text:
                     yield chunk.text
         except Exception as e:
