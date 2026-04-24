@@ -1,8 +1,7 @@
 import os
 import logging
 from flask import Flask, request, jsonify, render_template, Response
-from google import genai
-from google.genai import types
+import google.generativeai as genai
 from dotenv import load_dotenv
 from flask_talisman import Talisman
 from flask_limiter import Limiter
@@ -34,10 +33,11 @@ limiter = Limiter(
 
 # Configure Gemini
 GENAI_API_KEY = os.getenv("GEMINI_API_KEY")
-client = None
+model = None
 if GENAI_API_KEY:
-    # Adoption: Using the latest google-genai SDK
-    client = genai.Client(api_key=GENAI_API_KEY)
+    genai.configure(api_key=GENAI_API_KEY)
+    # Reverting to the version we know works for your key
+    model = genai.GenerativeModel('gemini-flash-latest')
 
 
 @app.route('/')
@@ -49,7 +49,7 @@ def index() -> str:
 @limiter.limit("10 per minute") # Specific rate limit for chat API
 def chat() -> Response | tuple[Response, int]:
     """Handle incoming chat messages and stream AI responses."""
-    if not client:
+    if not model:
         logging.error("Gemini API key is missing.")
         return jsonify({"error": "Gemini API key not configured."}), 500
     
@@ -81,21 +81,18 @@ def chat() -> Response | tuple[Response, int]:
     3. If they ask for dates or booth locations, ALWAYS direct them to: { "www.vote.org" if country == "USA" else "eci.gov.in" }.
     """
 
-    # Advanced usage: System Instructions for strict grounding using the new SDK config
-    config = types.GenerateContentConfig(
-        system_instruction=system_instruction,
-        max_output_tokens=100, # Safety limit
+    # Use old-style generative model configuration for stability
+    request_model = genai.GenerativeModel(
+        'gemini-flash-latest',
+        system_instruction=system_instruction
     )
     
     def generate() -> Generator[str, None, None]:
         """Generator function to stream AI response chunks."""
         try:
-            # Using the latest SDK streaming generation with stable model
-            for chunk in client.models.generate_content_stream(
-                model='gemini-flash-latest',
-                contents=user_message,
-                config=config
-            ):
+            # Reverting to the old-style streaming which was stable
+            response = request_model.generate_content(user_message, stream=True)
+            for chunk in response:
                 if chunk.text:
                     yield chunk.text
         except Exception as e:
