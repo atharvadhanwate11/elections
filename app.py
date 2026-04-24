@@ -92,7 +92,7 @@ def chat() -> Response | tuple[Response, int]:
         try:
             # Using the latest SDK streaming generation with stable model
             for chunk in client.models.generate_content_stream(
-                model='gemini-1.5-flash',
+                model='gemini-flash-latest',
                 contents=user_message,
                 config=config
             ):
