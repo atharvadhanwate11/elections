@@ -81,11 +81,21 @@ def chat() -> Response | tuple[Response, int]:
     3. If they ask for dates or booth locations, ALWAYS direct them to: { "www.vote.org" if country == "USA" else "eci.gov.in" }.
     """
 
+    # Google Services Optimization: Adding Safety Settings for Responsible AI
+    safety_settings = [
+        {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
+        {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
+        {"category": "HARM_CATEGORY_SEXUALLY_EXPLICIT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
+        {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_MEDIUM_AND_ABOVE"},
+    ]
+
     # Use old-style generative model configuration for stability
     request_model = genai.GenerativeModel(
         'gemini-flash-latest',
-        system_instruction=system_instruction
+        system_instruction=system_instruction,
+        safety_settings=safety_settings
     )
+
     
     def generate() -> Generator[str, None, None]:
         """Generator function to stream AI response chunks."""

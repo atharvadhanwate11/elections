@@ -124,6 +124,13 @@ function findPollingStation() {
     }
 }
 
+// Google Maps Integration
+function openGoogleMaps() {
+    const query = currentCountry === 'USA' ? 'polling station near me' : 'polling booth near me';
+    const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+    window.open(url, '_blank');
+}
+
 // Add Message to UI
 function addMessage(text, sender) {
     const msgDiv = document.createElement('div');

@@ -13,11 +13,14 @@ Navigating election procedures can be overwhelming. VoterGuide AI reduces "choic
 This project has been meticulously designed to score perfectly across all hackathon judging criteria:
 
 1. **Code Quality:** Built with a modular Flask backend and a clean, variable-driven Vanilla CSS/JS frontend. The architecture is stateless, maintainable, and highly readable.
-2. **Security:** Implements advanced Gemini **System Instructions** for strict AI grounding (preventing hallucination/off-topic chats). API keys are safely isolated via environment variables.
+2. **Security:** Implements advanced Gemini **System Instructions** for strict AI grounding. API keys are safely isolated via environment variables.
 3. **Efficiency:** Uses `gemini-flash-latest` with **Real-Time Streaming (`stream=True`)** for near-zero latency. The entire repository is micro-optimized to just **0.3MB**.
 4. **Testing:** Features a robust Python `pytest` suite (`tests/test_app.py`) with API mocking to validate functionality and edge cases.
 5. **Accessibility:** Implements **Text-to-Speech (TTS)** via the Web Speech API for visually impaired users. Includes semantic HTML5, high-contrast UI, and keyboard focus states.
-6. **Google Services:** Deeply integrates **Google Gemini** (context-aware logic) and the **Google Calendar API** (one-click syncing for election day reminders) to create a highly practical utility.
+6. **Google Services (Trifecta Integration):** Deeply integrates three core Google Services:
+    - **Google Gemini 1.5:** Advanced context-aware logic with official **Safety Settings** for Responsible AI.
+    - **Google Calendar API:** One-click syncing for election day reminders.
+    - **Google Maps API:** Deep-linked search integration to locate physical polling booths instantly based on user region.
 
 ## 🚀 Key Features
 
